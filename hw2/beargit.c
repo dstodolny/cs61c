@@ -450,7 +450,38 @@ int beargit_branch() {
  */
 
 int checkout_commit(const char* commit_id) {
-  /* COMPLETE THE REST */
+  FILE* findex;
+  char line[FILENAME_SIZE];
+  char source[COMMIT_ID_SIZE+50];
+
+  // delete all indexed files
+  findex = fopen(".beargit/.index", "r");
+  while(fgets(line, sizeof(line), findex)) {
+    strtok(line, "\n");
+    fs_rm(line);
+  }
+  fclose(findex);
+
+  if (strcmp(commit_id, "0000000000000000000000000000000000000000") == 0) {
+      FILE* findex = fopen(".beargit/.index", "w");
+      fclose(findex);
+  } else {
+    // copy .index from commit_id
+    sprintf(source, ".beargit/%s/.index", commit_id);
+    fs_cp(source, ".beargit/.index");
+
+    // copy all indexed files back
+    findex = fopen(".beargit/.index", "r");
+    while(fgets(line, sizeof(line), findex)) {
+      strtok(line, "\n");
+      sprintf(source, ".beargit/%s/%s", commit_id, line);
+      fs_cp(source, line);
+    }
+    fclose(findex);
+  }
+
+  write_string_to_file(".beargit/.prev", commit_id);
+
   return 0;
 }
 
