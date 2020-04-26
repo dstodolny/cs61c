@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
 #include "beargit.h"
 #include "util.h"
 
@@ -27,7 +28,7 @@ int init_suite(void)
 }
 
 /* You can also delete leftover files after a test suite runs, but there's
- * no need to duplicate code between this and init_suite 
+ * no need to duplicate code between this and init_suite
  */
 int clean_suite(void)
 {
@@ -45,7 +46,7 @@ void simple_sample_test(void)
     // We suggest checking the outputs of printfs/fprintfs to both stdout
     // and stderr. To make this convenient for you, the tester replaces
     // printf and fprintf with copies that write data to a file for you
-    // to access. To access all output written to stdout, you can read 
+    // to access. To access all output written to stdout, you can read
     // from the "TEST_STDOUT" file. To access all output written to stderr,
     // you can read from the "TEST_STDERR" file.
     int retval;
@@ -54,6 +55,159 @@ void simple_sample_test(void)
     retval = beargit_add("asdf.txt");
     CU_ASSERT(0==retval);
 }
+
+/* Test of branch command.
+
+ * This suite is testing three things. First it checks that initialy
+ * there's only master branch visible in the command output.
+ *
+ * Then it adds another branch and checks if the new branch is visible
+ * with the '*' mark as the current branch.
+ *
+ * Then it checkouts to master to check if the '*' mark is near the
+ * master branch.
+ *
+ * In the end it creates a valid commit and then checkouts that
+ * commit. The branch command should display all branches available
+ * without '*' mark near any of them (as we're in the detached state).
+ */
+void branch_test(void)
+{
+  int retval;
+  const int LINE_SIZE = 512;
+  char line[LINE_SIZE];
+  FILE *fstdout;
+
+  retval = beargit_init();
+  CU_ASSERT(0==retval);
+
+  // Test branch output initially
+  retval = beargit_branch();
+  CU_ASSERT(0==retval);
+
+  fstdout = fopen("TEST_STDOUT", "r");
+  CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+  CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+  CU_ASSERT(!strcmp(line, "* master\n"));
+
+  CU_ASSERT_PTR_NULL(fgets(line, LINE_SIZE, fstdout));
+
+  CU_ASSERT(feof(fstdout));
+  fclose(fstdout);
+
+  // Clean up TEST_STDOUT file
+  fstdout = fopen("TEST_STDOUT", "w");
+  fclose(fstdout);
+
+  // Test branch output after creating new branch
+  retval = beargit_checkout("dev", 1);
+  CU_ASSERT(0==retval);
+
+  retval = beargit_branch();
+  CU_ASSERT(0==retval);
+
+  fstdout = fopen("TEST_STDOUT", "r");
+  CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+  CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+  CU_ASSERT(!strcmp(line, "  master\n"));
+
+  CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+  CU_ASSERT(!strcmp(line, "* dev\n"));
+
+  CU_ASSERT_PTR_NULL(fgets(line, LINE_SIZE, fstdout));
+
+  CU_ASSERT(feof(fstdout));
+  fclose(fstdout);
+
+  // Clean up TEST_STDOUT file
+  fstdout = fopen("TEST_STDOUT", "w");
+  fclose(fstdout);
+
+  // Test branch output after checking out a commit
+  retval = beargit_commit("GO BEARS!");
+  CU_ASSERT(0==retval);
+
+  retval = beargit_checkout("1666666666666666666666666666666666666661", 0);
+  CU_ASSERT(0==retval);
+
+  retval = beargit_branch();
+  CU_ASSERT(0==retval);
+
+  fstdout = fopen("TEST_STDOUT", "r");
+  CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+  CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+  CU_ASSERT(!strcmp(line, "  master\n"));
+
+  CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+  CU_ASSERT(!strcmp(line, "  dev\n"));
+
+  CU_ASSERT_PTR_NULL(fgets(line, LINE_SIZE, fstdout));
+
+  CU_ASSERT(feof(fstdout));
+  fclose(fstdout);
+}
+
+/* Test of checkout command
+ *
+ * This suit is testing checkout command. First it test checking out to
+ * a particular valid commit id. When commit id does not exists the call
+ * should return 1.
+ */
+void checkout_test(void)
+{
+  int retval, i;
+  FILE *fstdout;
+  const int LINE_SIZE = 512;
+  char line[LINE_SIZE];
+
+  retval = beargit_init();
+  CU_ASSERT(0==retval);
+
+  // Test checkout a commit id that doesn't exist
+  retval = beargit_checkout("6666666666666666666666666666666666666661", 0);
+  CU_ASSERT(1==retval);
+  read_string_from_file("TEST_STDERR", line, LINE_SIZE);
+  CU_ASSERT(!strcmp(line, "ERROR: Commit 6666666666666666666666666666666666666661 does not exist\n"));
+  fstdout = fopen("TEST_STDERR", "w");
+  fclose(fstdout);
+
+  // Test checkout a commit id that does exist
+  retval = beargit_add("asdf.txt");
+  CU_ASSERT(0==retval);
+
+  retval = beargit_commit("GO BEARS!");
+  CU_ASSERT(0==retval);
+
+  retval = beargit_checkout("6666666666666666666666666666666666666661", 0);
+  CU_ASSERT(0==retval);
+  read_string_from_file(".beargit/.current_branch", line, LINE_SIZE);
+  CU_ASSERT(!strcmp(line, ""));
+  read_string_from_file(".beargit/.prev", line, LINE_SIZE);
+  CU_ASSERT(!strcmp(line, "6666666666666666666666666666666666666661"));
+
+  // Checkout branch that does not exist
+  retval = beargit_checkout("dev", 0);
+  CU_ASSERT(1==retval);
+  for (i = 0; *(line+i) != '\0'; i++)
+    *(line+i) = '\0';
+  read_string_from_file("TEST_STDERR", line, LINE_SIZE);
+  CU_ASSERT(!strcmp(line, "ERROR: No branch dev exists\n"));
+
+  retval = beargit_checkout("dev", 1);
+  CU_ASSERT(0==retval);
+  read_string_from_file(".beargit/.current_branch", line, LINE_SIZE);
+  CU_ASSERT(!strcmp(line, "dev"));
+
+  retval = beargit_checkout("master", 0);
+  CU_ASSERT(0==retval);
+  read_string_from_file(".beargit/.current_branch", line, LINE_SIZE);
+  CU_ASSERT(!strcmp(line, "master"));
+
+}
+
 
 struct commit {
   char msg[MSG_SIZE];
@@ -145,6 +299,8 @@ int cunittester()
 {
    CU_pSuite pSuite = NULL;
    CU_pSuite pSuite2 = NULL;
+   CU_pSuite pSuite3 = NULL;
+   CU_pSuite pSuite4 = NULL;
 
    /* initialize the CUnit test registry */
    if (CUE_SUCCESS != CU_initialize_registry())
@@ -177,10 +333,35 @@ int cunittester()
       return CU_get_error();
    }
 
+   /* add a suite to the registry */
+   pSuite3 = CU_add_suite("Suite_3", init_suite, clean_suite);
+   if (NULL == pSuite3) {
+     CU_cleanup_registry();
+     return CU_get_error();
+   }
+
+   /* Add test named branch_test to Suite 3 */
+   if (NULL == CU_add_test(pSuite3, "Branch output test", branch_test)) {
+     CU_cleanup_registry();
+     return CU_get_error();
+   }
+
+   /* add a suite to the registry */
+   pSuite4 = CU_add_suite("Suite_4", init_suite, clean_suite);
+   if (NULL == pSuite4) {
+     CU_cleanup_registry();
+     return CU_get_error();
+   }
+
+   /* Add test named checkout_test to Suite 4 */
+   if (NULL == CU_add_test(pSuite4, "Checkout test", checkout_test)) {
+     CU_cleanup_registry();
+     return CU_get_error();
+   }
+
    /* Run all tests using the CUnit Basic interface */
    CU_basic_set_mode(CU_BRM_VERBOSE);
    CU_basic_run_tests();
    CU_cleanup_registry();
    return CU_get_error();
 }
-
