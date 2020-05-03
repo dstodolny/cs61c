@@ -58,9 +58,35 @@ int translate_num(long int* output, const char* str, long int lower_bound,
     if (!str || !output) {
         return -1;
     }
-    /* YOUR CODE HERE */
 
-    return -1;
+    int all_zero = 1;
+    int i = 0;
+
+    while (*(str+i)) {
+      if (*(str+i) != '0')
+        all_zero = 0;
+      i++;
+    }
+
+    if (all_zero) {
+      *output = 0;
+      return 0;
+    }
+
+    int base = 10;
+    if (*str == '0' && (*(str+1) == 'x' || *(str+1) == 'X')) {
+      base = 16;
+    }
+
+    long r;
+    char *rest;
+    r = strtol(str, &rest, base);
+    if (!(*rest) && r && r >= lower_bound && r <= upper_bound) {
+      *output = strtol(str, NULL, base);
+      return 0;
+    } else {
+      return -1;
+    }
 }
 
 /* Translates the register name to the corresponding register number. Please
