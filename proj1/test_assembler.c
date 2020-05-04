@@ -13,7 +13,7 @@ const char* TMP_FILE = "test_output.txt";
 const int BUF_SIZE = 1024;
 
 /****************************************
- *  Helper functions 
+ *  Helper functions
  ****************************************/
 
 int do_nothing() {
@@ -45,7 +45,7 @@ int check_lines_equal(char **arr, int num) {
 }
 
 /****************************************
- *  Test cases for translate_utils.c 
+ *  Test cases for translate_utils.c
  ****************************************/
 
 void test_translate_reg() {
@@ -86,7 +86,7 @@ void test_translate_num() {
 }
 
 /****************************************
- *  Test cases for tables.c 
+ *  Test cases for tables.c
  ****************************************/
 
 void test_table_1() {
@@ -101,18 +101,18 @@ void test_table_1() {
     CU_ASSERT_EQUAL(retval, 0);
     retval = add_to_table(tbl, "q45", 16);
     CU_ASSERT_EQUAL(retval, 0);
-    retval = add_to_table(tbl, "q45", 24); 
-    CU_ASSERT_EQUAL(retval, -1); 
-    retval = add_to_table(tbl, "bob", 14); 
-    CU_ASSERT_EQUAL(retval, -1); 
+    retval = add_to_table(tbl, "q45", 24);
+    CU_ASSERT_EQUAL(retval, -1);
+    retval = add_to_table(tbl, "bob", 14);
+    CU_ASSERT_EQUAL(retval, -1);
 
     retval = get_addr_for_symbol(tbl, "abc");
-    CU_ASSERT_EQUAL(retval, 8); 
+    CU_ASSERT_EQUAL(retval, 8);
     retval = get_addr_for_symbol(tbl, "q45");
-    CU_ASSERT_EQUAL(retval, 16); 
+    CU_ASSERT_EQUAL(retval, 16);
     retval = get_addr_for_symbol(tbl, "ef");
     CU_ASSERT_EQUAL(retval, -1);
-    
+
     free_table(tbl);
 
     char* arr[] = { "Error: name 'q45' already exists in table.",
@@ -124,7 +124,7 @@ void test_table_1() {
 
     retval = add_to_table(tbl2, "q45", 16);
     CU_ASSERT_EQUAL(retval, 0);
-    retval = add_to_table(tbl2, "q45", 24); 
+    retval = add_to_table(tbl2, "q45", 24);
     CU_ASSERT_EQUAL(retval, 0);
 
     free_table(tbl2);
