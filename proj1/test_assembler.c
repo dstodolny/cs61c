@@ -177,10 +177,10 @@ void test_translate_inst() {
   char *argsI2[6] = {"$s0", "10000"};
   char *argsI2err1[6] = {"$s0"};
   char *argsI2err2[6] = {"$s0", "-10"};
-  char *argsI3[6] = {"$s0", "$a0", "4"};
-  char *argsI3err1[6] = {"$s0", "$a0"};
-  char *argsI3err2[6] = {"$s0", "$a0", "32768"};
-  char *argsI4[6] = {"$s0", "$a0", "-4"};
+  char *argsI3[6] = {"$s0", "4", "$a0"};
+  char *argsI3err1[6] = {"$s0", "4"};
+  char *argsI3err2[6] = {"$s0", "32768", "$a0"};
+  char *argsI4[6] = {"$s0", "-4", "$a0"};
   char *argsB1[6] = {"$s0", "$a0", "fun"};
   char *argsB1err1[6] = {"$s0", "$a0", "fun2"};
   char *argsB1err2[6] = {"$s0", "a0", "fun"};
@@ -194,125 +194,179 @@ void test_translate_inst() {
   retval = add_to_table(symtbl, "fun", 20);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "addu", &argsR1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "addu", argsR1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "addu", &argsR1err1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "addu", argsR1err1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "addu", &argsR1err2, 2, 0, NULL, NULL);
+  retval = translate_inst(f, "addu", argsR1err2, 2, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "or", &argsR1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "or", argsR1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "slt", &argsR1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "slt", argsR1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "sltu", &argsR1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "sltu", argsR1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "sll", &argsR2, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "sll", argsR2, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "sll", &argsR2err1, 2, 0, NULL, NULL);
+  retval = translate_inst(f, "sll", argsR2err1, 2, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "sll", &argsR2err2, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "sll", argsR2err2, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "sll", &argsR2err3, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "sll", argsR2err3, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "jr", &argsJ1, 1, 0, NULL, NULL);
+  retval = translate_inst(f, "jr", argsJ1, 1, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "jr", &argsJ1err1, 2, 0, NULL, NULL);
+  retval = translate_inst(f, "jr", argsJ1err1, 2, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "jr", &argsJ1err2, 1, 0, NULL, NULL);
+  retval = translate_inst(f, "jr", argsJ1err2, 1, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "addiu", &argsI1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "addiu", argsI1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "addiu", &argsI1err1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "addiu", argsI1err1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "addiu", &argsI1neg, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "addiu", argsI1neg, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "ori", &argsI1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "ori", argsI1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "ori", &argsI1err2, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "ori", argsI1err2, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "lui", &argsI2, 2, 0, NULL, NULL);
+  retval = translate_inst(f, "lui", argsI2, 2, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "lui", &argsI2err1, 1, 0, NULL, NULL);
+  retval = translate_inst(f, "lui", argsI2err1, 1, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "lui", &argsI2err2, 2, 0, NULL, NULL);
+  retval = translate_inst(f, "lui", argsI2err2, 2, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "lb", &argsI3, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "lb", argsI3, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "lb", &argsI3err1, 2, 0, NULL, NULL);
+  retval = translate_inst(f, "lb", argsI3err1, 2, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "lb", &argsI3err2, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "lb", argsI3err2, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "lbu", &argsI3, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "lbu", argsI3, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "lw", &argsI3, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "lw", argsI3, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "sb", &argsI3, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "sb", argsI3, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "sw", &argsI4, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "sw", argsI4, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "beq", &argsB1, 3, 4, symtbl, NULL);
+  retval = translate_inst(f, "beq", argsB1, 3, 4, symtbl, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "beq", &argsB1err1, 3, 4, symtbl, NULL);
+  retval = translate_inst(f, "beq", argsB1err1, 3, 4, symtbl, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "beq", &argsB1err2, 3, 4, symtbl, NULL);
+  retval = translate_inst(f, "beq", argsB1err2, 3, 4, symtbl, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "bne", &argsB1, 3, 28, symtbl, NULL);
+  retval = translate_inst(f, "bne", argsB1, 3, 28, symtbl, NULL);
   CU_ASSERT_EQUAL(retval, 0);
 
-  retval = translate_inst(f, "j", &argsJ2, 1, 28, NULL, reltbl);
+  retval = translate_inst(f, "j", argsJ2, 1, 28, NULL, reltbl);
   CU_ASSERT_EQUAL(retval, 0);
   retval = get_addr_for_symbol(reltbl, "printf");
   CU_ASSERT_EQUAL(retval, 28);
 
-  retval = translate_inst(f, "j", &argsJ2err, 2, 28, NULL, reltbl);
+  retval = translate_inst(f, "j", argsJ2err, 2, 28, NULL, reltbl);
   CU_ASSERT_EQUAL(retval, -1);
 
-  retval = translate_inst(f, "jal", &argsJ3, 1, 32, NULL, reltbl);
+  retval = translate_inst(f, "jal", argsJ3, 1, 32, NULL, reltbl);
   CU_ASSERT_EQUAL(retval, 0);
   retval = get_addr_for_symbol(reltbl, "scanf");
   CU_ASSERT_EQUAL(retval, 32);
 
-  retval = translate_inst(f, "xxx", &argsR1, 3, 0, NULL, NULL);
+  retval = translate_inst(f, "xxx", argsR1, 3, 0, NULL, NULL);
   CU_ASSERT_EQUAL(retval, -1);
 
   free_table(symtbl);
   free_table(reltbl);
   fclose(f);
-
-
-
 }
+
+void test_write_pass_one() {
+  int retval;
+
+  FILE *f = fopen(TMP_FILE, "w");
+  fclose(f);
+
+  f = fopen(TMP_FILE, "a");
+
+  char *args_addu[6] = {"$s0", "$a0", "$a1"};
+  char *args_li1[6] = {"$s0", "65536"};
+  char *args_li2[6] = {"$s0", "65535"};
+  char *args_li3[6] = {"$s0", "-1"};
+  char *args_li4[6] = {"$s0", "-32769"};
+  char *args_li5[6] = {"$s0", "-2147483648"};
+  char *args_lierr1[6] = {"$s0"};
+  char *args_lierr2[6] = {"$s0", "-2147483649" };
+  char *args_lierr3[6] = {"$s0", "4294967296" };
+  char *args_blt[6] = {"$s0", "$a0", "loop"};
+  char *args_blterr[6] = {"$s0", "$a0"};
+
+  retval = write_pass_one(f, "addu", args_addu, 3);
+  CU_ASSERT_EQUAL(retval, 1);
+
+  retval = write_pass_one(f, "li", args_li1, 2);
+  CU_ASSERT_EQUAL(retval, 2);
+
+  retval = write_pass_one(f, "li", args_li2, 2);
+  CU_ASSERT_EQUAL(retval, 1);
+
+  retval = write_pass_one(f, "li", args_li3, 2);
+  CU_ASSERT_EQUAL(retval, 1);
+
+  retval = write_pass_one(f, "li", args_li4, 2);
+  CU_ASSERT_EQUAL(retval, 2);
+
+  retval = write_pass_one(f, "li", args_li5, 2);
+  CU_ASSERT_EQUAL(retval, 2);
+
+  retval = write_pass_one(f, "li", args_lierr1, 1);
+  CU_ASSERT_EQUAL(retval, 0);
+
+  retval = write_pass_one(f, "li", args_lierr2, 2);
+  CU_ASSERT_EQUAL(retval, 0);
+
+  retval = write_pass_one(f, "li", args_lierr3, 2);
+  CU_ASSERT_EQUAL(retval, 0);
+
+  retval = write_pass_one(f, "blt", args_blt, 3);
+  CU_ASSERT_EQUAL(retval, 2);
+
+  retval = write_pass_one(f, "blt", args_blterr, 2);
+  CU_ASSERT_EQUAL(retval, 0);
+
+  fclose(f);
+}
+
 
 /****************************************
  *  Add your test cases here
@@ -355,6 +409,9 @@ int main(int argc, char** argv) {
     goto exit;
   }
   if (!CU_add_test(pSuite3, "test_translate_inst", test_translate_inst)) {
+    goto exit;
+  }
+  if (!CU_add_test(pSuite3, "test_write_pass_one", test_write_pass_one)) {
     goto exit;
   }
 

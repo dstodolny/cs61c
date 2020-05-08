@@ -6,7 +6,6 @@
 /* IMPLEMENT ME - see documentation in translate.c */
 unsigned write_pass_one(FILE* output, const char* name, char** args, int num_args);
 
-/* IMPLEMENT ME - see documentation in translate.c */
 int translate_inst(FILE* output, const char* name, char** args, size_t num_args,
     uint32_t addr, SymbolTable* symtbl, SymbolTable* reltbl);
 
@@ -15,8 +14,6 @@ int translate_inst(FILE* output, const char* name, char** args, size_t num_args,
 int write_rtype(uint8_t funct, FILE* output, char** args, size_t num_args);
 
 int write_shift(uint8_t funct, FILE* output, char** args, size_t num_args);
-
-/* SOLUTION CODE BELOW */
 
 int write_jr(uint8_t funct, FILE* output, char** args, size_t num_args);
 
@@ -33,5 +30,9 @@ int write_branch(uint8_t opcode, FILE* output, char** args, size_t num_args,
 
 int write_jump(uint8_t opcode, FILE* output, char** args, size_t num_args,
     uint32_t addr, SymbolTable* reltbl);
+
+int write_li(FILE* output, const char* name, char** args, int num_args);
+
+int write_blt(FILE* output, const char* name, char** args, int num_args);
 
 #endif

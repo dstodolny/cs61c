@@ -40,11 +40,9 @@
 */
 unsigned write_pass_one(FILE* output, const char* name, char** args, int num_args) {
   if (strcmp(name, "li") == 0) {
-    /* YOUR CODE HERE */
-    return 0;
+    return write_li(output, name, args, num_args);
   } else if (strcmp(name, "blt") == 0) {
-    /* YOUR CODE HERE */
-    return 0;
+    return write_blt(output, name, args, num_args);
   } else {
     write_inst_string(output, name, args, num_args);
     return 1;
@@ -231,8 +229,8 @@ int write_mem(uint8_t opcode, FILE* output, char** args, size_t num_args) {
 
   long int offset;
   int rt = translate_reg(args[0]);
-  int rs = translate_reg(args[1]);;
-  int err = translate_num(&offset, args[2], -32768, 32767);
+  int rs = translate_reg(args[2]);;
+  int err = translate_num(&offset, args[1], -32768, 32767);
 
   if (err != 0 || rt == -1 || rs == -1)
     return -1;
@@ -270,11 +268,10 @@ int write_branch(uint8_t opcode, FILE* output, char** args, size_t num_args,
 
 int write_jump(uint8_t opcode, FILE* output, char** args, size_t num_args,
                uint32_t addr, SymbolTable* reltbl) {
-  int64_t sym_addr;
   if (num_args != 1)
     return -1;
 
-  int *label = args[0];
+  char *label = args[0];
 
   if (add_to_table(reltbl, label, addr) == -1) {
     return -1;
@@ -283,4 +280,42 @@ int write_jump(uint8_t opcode, FILE* output, char** args, size_t num_args,
   uint32_t instruction = (opcode<<26);
   write_inst_hex(output, instruction);
   return 0;
+}
+
+int write_li(FILE* output, const char* name, char** args, int num_args) {
+  if (num_args != 2)
+    return 0;
+
+  long int immediate;
+  uint16_t ub, lb;
+
+  char *rt = args[0];
+  int err = translate_num(&immediate, args[1], -2147483648, 4294967295);
+  if (err != 0)
+    return 0;
+
+  if (immediate > 65535 || immediate < -32768) {
+    ub = immediate>>16;
+    lb = immediate & 65535;
+    fprintf(output, "lui $at %d\n", ub);
+    fprintf(output, "ori %s $at %d\n", rt, lb);
+    return 2;
+  }
+
+  fprintf(output, "%s %s $0 %ld\n", "addiu", args[0], immediate);
+  return 1;
+}
+
+int write_blt(FILE* output, const char* name, char** args, int num_args) {
+  if (num_args != 3)
+    return 0;
+
+  char *rs = args[0];
+  char *rt = args[1];
+  char *label = args[2];
+
+  fprintf(output, "slt $at %s %s\n", rs, rt);
+  fprintf(output, "bne $at $0 %s\n", label);
+
+  return 2;
 }
