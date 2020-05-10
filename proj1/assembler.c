@@ -122,40 +122,39 @@ static int add_if_label(uint32_t input_line, char* str, uint32_t byte_offset,
 int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
   char buf[BUF_SIZE];
   char *pf;
-  char *lf;
   char name[10];
   char* args[MAX_ARGS];
   int num_args = 0;
-  int ln = 0;
+  int ln = 1;
   uint32_t byte_offset = 0;
   int exit_code = 0;
   int ins_count = 0;
-  size_t len;
-  int only_label = 0;
 
   while (fgets(buf, BUF_SIZE, input)) {
     skip_comment(buf);
     pf = strtok(buf, IGNORE_CHARS);
     if (!pf) {
+      ln++;
       continue;
     }
-    len = strlen(pf);
-    if (pf[len-1] == ':') {
-      lf = pf;
-
-      pf = strtok(NULL, IGNORE_CHARS);
-
-      if (!pf) {
-        only_label = 1;
-      }
-      if (add_if_label(ln, lf, byte_offset, symtbl) == -1) {
+    switch (add_if_label(ln, pf, byte_offset, symtbl))
+      {
+      case 1:
+        pf = strtok(NULL, IGNORE_CHARS);
+        if (!pf) {
+          ln++;
+          continue;
+        }
+        break;
+      case -1:
         exit_code = -1;
+        pf = strtok(NULL, IGNORE_CHARS);
+        if (!pf) {
+          ln++;
+          continue;
+        }
+        break;
       }
-      if (only_label) {
-        only_label = 0;
-        continue;
-      }
-    }
     strcpy(name, pf);
     while ((pf = strtok(NULL, IGNORE_CHARS))) {
       if (num_args == MAX_ARGS) {
@@ -201,7 +200,7 @@ int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl
   int exit_code = 0;
 
   // Store input line number / byte offset below. When should each be incremented?
-  uint32_t ln = 0;
+  uint32_t ln = 1;
   uint32_t addr = 0;
 
   // First, read the next line into a buffer.
