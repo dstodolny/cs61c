@@ -12,7 +12,7 @@ assembler: clean
 
 test-assembler: clean
 	$(CC) $(CFLAGS) -DTESTING -o test-assembler test_assembler.c $(ASSEMBLER_FILES) $(CUNIT)
-	./test-assembler
+
 
 clean:
 	rm -f *.o assembler test-assembler core
