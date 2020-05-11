@@ -58,7 +58,25 @@ strlen_done:
 # Returns: the destination array
 #------------------------------------------------------------------------------
 strncpy:
-        # YOUR CODE HERE
+        addiu $sp, $sp, -12
+        sw $ra, 0($sp)
+        sw $s0, 4($sp)
+        sw $s1, 8($sp)
+        move $v0, $a0
+        move $s0, $0
+strncpy_loop:
+        beq $s0, $a2, strncpy_done
+        addu $t0, $s0, $a1
+        addu $t1, $s0, $a0
+        lb $s1, 0($t0)
+        sb $s1, 0($t1)
+        addiu $s0, $s0, 1
+        j strncpy_loop
+strncpy_done:
+        lw $s1, 8($sp)
+        lw $s0, 4($sp)
+        lw $ra, 0($sp)
+        addiu $sp, $sp, 12
         jr $ra
 
 #------------------------------------------------------------------------------
@@ -74,7 +92,21 @@ strncpy:
 # Returns: pointer to the copy of the string
 #------------------------------------------------------------------------------
 copy_of_str:
-        # YOUR CODE HERE
+        addiu $sp, $sp, -8
+        sw $ra, 0($sp)
+        sw $s0, 4($sp)
+        move $s0, $a0
+        jal strlen
+        addiu $a0, $v0, 1
+        li $v0, 9
+        syscall
+        move $a2, $a0
+        move $a0, $v0
+        move $a1, $s0
+        jal strncpy
+        lw $s0, 4($sp)
+        lw $ra, 0($sp)
+        addiu $sp, $sp, 8
         jr $ra
 
 ###############################################################################
