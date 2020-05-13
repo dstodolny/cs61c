@@ -36,24 +36,33 @@
 # Returns: none
 #------------------------------------------------------------------------------
 hex_to_str:
-        li $t0, 16
-hex_to_str_largest_divisor:
-        div $a0, $t0
-        mflo $t1
-        beq $t1, $0, hex_to_str_next
-        mul $t0, $t0, 16
-        j hex_to_str_largest_divisor
+        addiu $sp, $sp, -12
+        sw $ra, 0($sp)
+        sw $s0, 4($sp)
+        sw $s1, 8($sp)
+        sb $0, 9($a1)
+        li $t0, 0x0a
+        sb $t0, 8($a1)
+        addiu $s1, $a1, 7
 hex_to_str_next:
-        mfhi $t2
+        andi $s0, $a0, 15
+        sltiu $t0, $s0, 10
+        bne $t0, $0, hex_to_str_num
+        addiu $s0, $s0, 87
+        j hex_to_str_write
+hex_to_str_num:
+        addiu $s0, $s0, 48
 hex_to_str_write:
-        div $t0, $t0, 16
-        div $t2, $t0
-        mflo $t3
-        addiu $t3, $t3, 48 # branch here
-        sb $t3, 0($a1)
-        addiu $a1, $a1, 1
-        mfhi $t2
-        bne $t2, $0, hex_to_str_write
+        sb $s0, 0($s1)
+        beq $s1, $a1, hex_to_str_done
+        addiu $s1, $s1, -1
+        srl $a0, $a0, 4
+        j hex_to_str_next
+hex_to_str_done:
+        lw $s1, 8($sp)
+        lw $s0, 4($sp)
+        lw $ra 0($sp)
+        addiu $sp, $sp, 12
         jr $ra
 
 ###############################################################################
